@@ -1,3 +1,25 @@
+# Build the application
+FROM gradle:8.14-jdk21 AS build
+
+COPY build.gradle .
+COPY settings.gradle .
+COPY gradlew .
+COPY gradle gradle/
+COPY common/build.gradle common/.
+COPY proprietary/build.gradle proprietary/.
+RUN ./gradlew build -x spotlessApply -x spotlessCheck -x test -x sonarqube || return 0
+
+# Set the working directory
+WORKDIR /app
+
+# Copy the entire project to the working directory
+COPY . .
+
+# Build the application with DISABLE_ADDITIONAL_FEATURES=true (to match the runtime environment)
+RUN DISABLE_ADDITIONAL_FEATURES=true \
+    STIRLING_PDF_DESKTOP_UI=false \
+    ./gradlew clean build -x spotlessApply -x spotlessCheck -x test -x sonarqube
+
 # Main stage
 FROM alpine:3.22.0@sha256:8a1f59ffb675680d47db6337b49d22281a139e9d709335b492be023728e11715
 
@@ -6,7 +28,7 @@ COPY scripts /scripts
 COPY pipeline /pipeline
 COPY stirling-pdf/src/main/resources/static/fonts/*.ttf /usr/share/fonts/opentype/noto/
 #COPY src/main/resources/static/fonts/*.otf /usr/share/fonts/opentype/noto/
-COPY build/libs/*.jar app.jar
+COPY --from=build /app/build/libs/*.jar app.jar
 
 ARG VERSION_TAG
 
