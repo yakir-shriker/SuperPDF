@@ -7,6 +7,7 @@ COPY gradlew .
 COPY gradle gradle/
 COPY common/build.gradle common/.
 COPY proprietary/build.gradle proprietary/.
+COPY stirling-pdf/build.gradle stirling-pdf/.
 RUN ./gradlew build -x spotlessApply -x spotlessCheck -x test -x sonarqube || return 0
 
 # Set the working directory
