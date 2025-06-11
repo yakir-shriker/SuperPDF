@@ -68,8 +68,21 @@ dependencies {
 
 sourceSets {
     main {
+        java {
+            if (System.getenv('STIRLING_PDF_DESKTOP_UI') == 'false') {
+                exclude 'stirling/software/SPDF/UI/impl/**'
+            }
+        }
         resources {
             srcDirs += ['../configs']
+        }
+    }
+    
+    test {
+        java {
+            if (System.getenv('STIRLING_PDF_DESKTOP_UI') == 'false') {
+                exclude 'stirling/software/SPDF/UI/impl/**'
+            }
         }
     }
 }
